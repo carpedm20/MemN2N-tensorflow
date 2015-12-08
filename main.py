@@ -21,4 +21,10 @@ params = {
     'nwords': 10000,
 }
 
-model = g_build_model(params)
+with tf.Session() as sess:
+    _, model = g_build_model(params)
+
+    init = tf.initialize_all_variables()
+    sess.run(init)
+
+    tf.train.write_graph(sess.graph_def, '/tmp/MemN2N', 'graph.pbtxt')

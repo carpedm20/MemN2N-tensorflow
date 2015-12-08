@@ -25,8 +25,8 @@ def build_memory(params, input, context, time):
     Bin_t = tf.nn.embedding_lookup(T_B, time)
     Bin = tf.add(Bin_c, Bin_t)
 
-    for h in xrange(1, params['nhop'] + 1):
-        hid3dim = tf.reshape(hid[h-1], [-1, 1, params['edim']])
+    for h in xrange(params['nhop']):
+        hid3dim = tf.reshape(hid[-1], [-1, 1, params['edim']])
         Aout = tf.batch_matmul(hid3dim, Ain, adj_y=True)
         Aout2dim = tf.reshape(Aout, [-1, params['mem_size']])
         P = tf.nn.softmax(Aout2dim)
@@ -35,7 +35,7 @@ def build_memory(params, input, context, time):
         Bout = tf.batch_matmul(probs3dim, Bin)
         Bout2dim = tf.reshape(Bout, [-1, params['edim']])
 
-        Cout = tf.matmul(hid[h-1], C)
+        Cout = tf.matmul(hid[-1], C)
         Dout = tf.add(Cout, Bout2dim)
 
         share_list[0].append(Cout)
@@ -59,11 +59,11 @@ def g_build_model(params):
     context = tf.placeholder(tf.int32, [params['batch_size'], params['mem_size']])
 
     hid, share_list = build_memory(params, input, context, time)
-    z = tf.matmul(hid[-1], tf.Variable(tf.random_normal([params['edim'], params['nwords']])))
+    z = tf.matmul(hid[-1], tf.Variable(tf.random_uniform([params['edim'], params['nwords']], -0.1, 0.1)))
 
     pred = tf.log(tf.nn.softmax(z))
     loss = -tf.cast(tf.reduce_sum(tf.argmax(pred, 1) * target), tf.float32) / params['batch_size']
 
-    train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+    #train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
-    return train, loss
+    return None, loss
