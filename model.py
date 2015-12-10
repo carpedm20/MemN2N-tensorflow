@@ -62,10 +62,7 @@ def g_build_model(params):
     hid, share_list = build_memory(params, input, context, time)
     z = tf.matmul(hid[-1], tf.Variable(tf.random_uniform([params['edim'], params['nwords']], -0.1, 0.1)))
 
-    # Negative Log Likelihood
-    pred = tf.log(tf.nn.softmax(z))
-    loss = -tf.reduce_mean(pred * target)
-
+    loss = softmax_cross_entropy_with_logits(z, target)
     train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
     return None, loss
