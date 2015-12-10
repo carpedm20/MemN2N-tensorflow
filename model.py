@@ -55,15 +55,17 @@ def build_memory(params, input, context, time):
 def g_build_model(params):
     input = tf.placeholder(tf.float32, [None, params['edim']])
     time = tf.placeholder(tf.int32, [None, params['mem_size']])
-    target = tf.placeholder(tf.int64, [params['batch_size']])
+    # should pass one-hot-encoded labels
+    target = tf.placeholder(tf.float32, [params['batch_size'], params['nwords']])
     context = tf.placeholder(tf.int32, [params['batch_size'], params['mem_size']])
 
     hid, share_list = build_memory(params, input, context, time)
     z = tf.matmul(hid[-1], tf.Variable(tf.random_uniform([params['edim'], params['nwords']], -0.1, 0.1)))
 
+    # Negative Log Likelihood
     pred = tf.log(tf.nn.softmax(z))
-    loss = -tf.cast(tf.reduce_sum(tf.argmax(pred, 1) * target), tf.float32) / params['batch_size']
+    loss = -tf.reduce_mean(pred * target)
 
-    #train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+    train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
     return None, loss
