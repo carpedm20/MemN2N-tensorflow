@@ -1,18 +1,19 @@
 import tensorflow as tf
 
-from data import g_read_words
+from data import read_data
 from model import MemN2N
 
 count = []
 word2idx = {}
 
-train_data = g_read_words('data/ptb.train.txt', count, word2idx)
-valid_data = g_read_words('data/ptb.valid.txt', count, word2idx)
-test_data = g_read_words('data/ptb.test.txt', count, word2idx)
+train_data = read_data('data/ptb.train.txt', count, word2idx)
+valid_data = read_data('data/ptb.valid.txt', count, word2idx)
+test_data = read_data('data/ptb.test.txt', count, word2idx)
 
 idx2word = dict(zip(word2idx.values(), word2idx.keys()))
 
 params = {
+    'show': True,
     'nhop': 3,
     'edim': 150,
     'lindim': 75,

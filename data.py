@@ -1,7 +1,7 @@
 import os
 from collections import Counter
 
-def g_read_words(fname, count, word2idx):
+def read_data(fname, count, word2idx):
     if os.path.isfile(fname):
         with open(fname) as f:
             lines = f.readlines()

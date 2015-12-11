@@ -13,6 +13,7 @@ class MemN2N(object):
         self.batch_size = config.get('batch_size', 100)
         self.lindim = config.get('lindim', 75)
         self.max_grad_norm = config.get('max_grad_norm', 50)
+        self.show = config.get('show', False)
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -115,7 +116,12 @@ class MemN2N(object):
         for t in xrange(self.mem_size):
             time[:,t].fill(t)
 
+        if self.show:
+            from utils import ProgressBar
+            bar = ProgressBar('Training', max=N)
+
         for idx in xrange(N):
+            if self.show: bar.next()
             for b in xrange(self.batch_size):
                 m = random.randrange(self.mem_size, len(data))
                 target[b][data[m]] = 1
@@ -130,23 +136,29 @@ class MemN2N(object):
                                                  self.context: context})
             cost += loss
 
+        if self.show: bar.finish()
         return cost/N/self.batch_size
 
     def test(self, data):
         N = int(math.ceil(len(data) / self.batch_size))
         cost = 0
 
-        x = np.ndarray([self.batch_size, self.edim], dtype=np.float32, name="input")
+        x = np.ndarray([self.batch_size, self.edim], dtype=np.float32)
         time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
-        target = nd.zeros([self.batch_size, self.nwords]) # one-hot-encoded
-        context = nd.ndarray([self.batch_size, self.mem_size])
+        target = np.zeros([self.batch_size, self.nwords]) # one-hot-encoded
+        context = np.ndarray([self.batch_size, self.mem_size])
 
         x.fill(self.init_hid)
         for t in xrange(self.mem_size):
             time[:,t].fill(t)
 
+        if self.show:
+            from utils import ProgressBar
+            bar = ProgressBar('Training', max=N)
+
         m = self.mem_size 
         for idx in xrange(N):
+            if self.show: bar.next()
             for b in xrange(self.batch_size):
                 target[b][data[m]] = 1
                 context[b] = data[m - self.mem_size:m]
@@ -161,6 +173,7 @@ class MemN2N(object):
                                                                         self.context: context})
             cost += loss
 
+        if self.show: bar.finish()
         return cost/N/self.batch_size
 
     def run(self, train_data, test_data, epochs):
@@ -168,8 +181,8 @@ class MemN2N(object):
             train_loss = self.train(train_data)
             test_loss = self.test(test_data)
 
-            self.log_loss.append(train_loss, test_loss)
-            self.log_perp.append(math.exp(train_loss), math.ext(test_loss))
+            self.log_loss.append([train_loss, test_loss])
+            self.log_perp.append([math.exp(train_loss), math.ext(test_loss)])
 
             state = {
                 'perplexity': math.exp(train_loss),
