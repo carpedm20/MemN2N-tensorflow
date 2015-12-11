@@ -1,9 +1,10 @@
 import math
+import random
 import numpy as np
 import tensorflow as tf
 
 class MemN2N(object):
-    def __init__(self, config):
+    def __init__(self, config, sess):
         self.nwords = config.get('nwords', 100000)
         self.nhop = config.get('nhop', 3)
         self.edim = config.get('edim', 125)
@@ -22,12 +23,19 @@ class MemN2N(object):
         self.share_list = []
         self.share_list.append([])
 
-        self.train = None
+        self.optim = None
         self.loss = None
+        self.step = None
+
+        self.sess = sess
+        self.log_loss = []
+        self.log_perp = []
 
         self.build_memory()
 
     def build_memory(self):
+        self.global_step = tf.Variable(0, name="global_step")
+
         A = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
         B = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
         C = tf.Variable(tf.random_uniform([self.edim, self.edim], -0.1, 0.1))
@@ -75,16 +83,92 @@ class MemN2N(object):
         z = tf.matmul(self.hid[-1], tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1)))
 
         self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
-        self.train = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
+        self.optim = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss,
+                                                                      global_step=self.global_step)
 
-    def train(self, words):
-        N = math.ceil(words.shape[1] / self.batch_size)
+        tf.initialize_all_variables().run()
+        self.saver = tf.train.Saver()
+
+    def train(self, data):
+        N = int(math.ceil(len(data) / self.batch_size))
         cost = 0
-        y = np.ones(1)
 
         x = np.ndarray([self.batch_size, self.mem_size], dtype=np.float32)
-        x.fill(self.init_hid)
-
         time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
-        for idx in xrange(self.mem_size):
-            time
+        target = np.zeros([self.batch_size, self.nwords])
+        context = np.ndarray([self.batch_size, self.nwords])
+
+        x.fill(self.init_hid)
+        for t in xrange(self.mem_size):
+            time[:,t].fill(t)
+
+        for idx in xrange(N):
+            for b in xrange(self.batch_size):
+                m = random.randrange(self.mem_size, len(data))
+                target[b][data[m]] = 1
+                context[b] = data[m - self.mem_size:m]
+
+            _, loss, self.state = self.sess.run([self.optim,
+                                                 self.loss,
+                                                 self.global_step],
+                                                 feed_dict={
+                                                     self.input: x,
+                                                     self.time: time,
+                                                     self.target: target,
+                                                     self.context: context})
+            cost += loss
+            print("cost : %s" % cost)
+
+        return cost/N/self.batch_size
+
+    def test(self, data):
+        N = int(math.ceil(len(data) / self.batch_size))
+        cost = 0
+
+        x = np.ndarray([self.batch_size, self.mem_size], dtype=np.float32, name="input")
+        time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
+        target = nd.zeros([self.batch_size, self.nwords])
+        context = nd.ndarray([self.batch_size, self.nwords])
+
+        x.fill(self.init_hid)
+        for t in xrange(self.mem_size):
+            time[:,t].fill(t)
+
+        m = self.mem_size 
+        for idx in xrange(N):
+            for b in xrange(self.batch_size):
+                target[b][data[m]] = 1
+                context[b] = data[m - self.mem_size:m]
+                m += 1
+
+                if m >= len(data):
+                    m = self.mem_size
+
+            _, loss = self.sess.run([self.optim, self.loss], feed_dict={self.input: x,
+                                                                        self.time: time,
+                                                                        self.target: target,
+                                                                        self.context: context})
+            cost += loss
+            print("cost : %s" % cost)
+
+        return cost/N/self.batch_size
+
+    def run(self, train_data, test_data, epochs):
+        for idx in xrange(epochs):
+            train_loss = self.train(train_data)
+            test_loss = self.test(test_data)
+
+            self.log_loss.append(train_loss, test_loss)
+            self.log_perp.append(math.exp(train_loss), math.ext(test_loss))
+
+            state = {
+                'perplexity': math.exp(train_loss),
+                'epoch': idx,
+                'valid_perplexity': math.exp(test_loss)
+            }
+            print(state)
+
+            if idx % 10 == 0:
+                self.saver.save(self.sess,
+                                "MemN2N.model",
+                                 global_step = self.step.astype(int))

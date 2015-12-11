@@ -23,10 +23,8 @@ params = {
 
 if __name__ == '__main__':
     with tf.Session() as sess:
-        model = MemN2N(params)
-        model.g_build_model()
-
-        init = tf.initialize_all_variables()
-        sess.run(init)
+        model = MemN2N(params, sess)
+        model.build_model()
+        model.run(train_data, test_data, 100)
 
         tf.train.write_graph(sess.graph_def, '/tmp/MemN2N', 'graph.pbtxt')
