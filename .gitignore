@@ -1,3 +1,7 @@
+# checkpoint
+checkpoint
+*.model-*
+
 # trash
 .dropbox
 test*

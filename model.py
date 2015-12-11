@@ -189,7 +189,7 @@ class MemN2N(object):
             test_loss = np.sum(self.test(test_data))
 
             self.log_loss.append([train_loss, test_loss])
-            self.log_perp.append([math.exp(train_loss), math.ext(test_loss)])
+            self.log_perp.append([math.exp(train_loss), math.exp(test_loss)])
 
             state = {
                 'perplexity': math.exp(train_loss),

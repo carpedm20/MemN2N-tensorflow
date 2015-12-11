@@ -5,7 +5,7 @@ from model import MemN2N
 
 tf.app.flags.DEFINE_integer("edim", 150, "internal state dimension.")
 tf.app.flags.DEFINE_integer("lindim", 75, "linear part of the state.")
-tf.app.flags.DEFINE_integer("nhop", 3, "number of hops.")
+tf.app.flags.DEFINE_integer("nhop", 6, "number of hops.")
 tf.app.flags.DEFINE_integer("mem_size", 100, "memory size.")
 tf.app.flags.DEFINE_integer("batch_size", 125, "batch size to use during training.")
 tf.app.flags.DEFINE_integer("nepoch", 100, "number of epoch to use during training.")

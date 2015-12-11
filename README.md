@@ -15,7 +15,7 @@ This code requires [Tensorflow](https://www.tensorflow.org/). There is a set of 
 Usage
 -----
 
-To train a model with 6 hops and memory size of 100 (best model described in the paper), run the following command:
+To train a model with 6 hops and memory size of 100, run the following command:
 
     $ python main.py --nhop 6 --mem_size 100
 
