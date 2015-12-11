@@ -7,7 +7,7 @@ tf.app.flags.DEFINE_integer("edim", 150, "internal state dimension.")
 tf.app.flags.DEFINE_integer("lindim", 75, "linear part of the state.")
 tf.app.flags.DEFINE_integer("nhop", 6, "number of hops.")
 tf.app.flags.DEFINE_integer("mem_size", 100, "memory size.")
-tf.app.flags.DEFINE_integer("batch_size", 125, "batch size to use during training.")
+tf.app.flags.DEFINE_integer("batch_size", 128, "batch size to use during training.")
 tf.app.flags.DEFINE_integer("nepoch", 100, "number of epoch to use during training.")
 tf.app.flags.DEFINE_float("init_lr", 0.01, "initial learning rate.")
 tf.app.flags.DEFINE_float("init_hid", 0.1, "initial internal state value.")
@@ -32,7 +32,7 @@ def main(_):
     with tf.Session() as sess:
         model = MemN2N(FLAGS, sess)
         model.build_model()
-        model.run(train_data, test_data)
+        model.run(train_data, valid_data)
 
 if __name__ == '__main__':
     tf.app.run()
