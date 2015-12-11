@@ -13,19 +13,20 @@ class MemN2N(object):
         self.batch_size = config.get('batch_size', 100)
         self.lindim = config.get('lindim', 75)
 
-        self.input = tf.placeholder(tf.float32, [None, self.edim])
-        self.time = tf.placeholder(tf.int32, [None, self.mem_size])
-        self.target = tf.placeholder(tf.float32, [self.batch_size, self.nwords]) # should pass one-hot-encoded labels
-        self.context = tf.placeholder(tf.int32, [self.batch_size, self.mem_size])
+        self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
+        self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
+        self.target = tf.placeholder(tf.float32, [self.batch_size, self.nwords], name="target")
+        self.context = tf.placeholder(tf.int32, [self.batch_size, self.mem_size], name="context")
 
         self.hid = []
         self.hid.append(self.input)
         self.share_list = []
         self.share_list.append([])
 
-        self.optim = None
+        self.lr = None
         self.loss = None
         self.step = None
+        self.optim = None
 
         self.sess = sess
         self.log_loss = []
@@ -82,8 +83,10 @@ class MemN2N(object):
     def build_model(self):
         z = tf.matmul(self.hid[-1], tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1)))
 
+        self.lr = tf.train.exponential_decay(0.0001, self.global_step,
+                                              100, 0.96, staircase=True)
         self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
-        self.optim = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss,
+        self.optim = tf.train.GradientDescentOptimizer(self.lr).minimize(self.loss,
                                                                       global_step=self.global_step)
 
         tf.initialize_all_variables().run()
@@ -93,10 +96,10 @@ class MemN2N(object):
         N = int(math.ceil(len(data) / self.batch_size))
         cost = 0
 
-        x = np.ndarray([self.batch_size, self.mem_size], dtype=np.float32)
+        x = np.ndarray([self.batch_size, self.edim], dtype=np.float32)
         time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
-        target = np.zeros([self.batch_size, self.nwords])
-        context = np.ndarray([self.batch_size, self.nwords])
+        target = np.zeros([self.batch_size, self.nwords]) # one-hot-encoded
+        context = np.ndarray([self.batch_size, self.mem_size])
 
         x.fill(self.init_hid)
         for t in xrange(self.mem_size):
@@ -125,10 +128,10 @@ class MemN2N(object):
         N = int(math.ceil(len(data) / self.batch_size))
         cost = 0
 
-        x = np.ndarray([self.batch_size, self.mem_size], dtype=np.float32, name="input")
+        x = np.ndarray([self.batch_size, self.edim], dtype=np.float32, name="input")
         time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
-        target = nd.zeros([self.batch_size, self.nwords])
-        context = nd.ndarray([self.batch_size, self.nwords])
+        target = nd.zeros([self.batch_size, self.nwords]) # one-hot-encoded
+        context = nd.ndarray([self.batch_size, self.mem_size])
 
         x.fill(self.init_hid)
         for t in xrange(self.mem_size):
