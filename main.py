@@ -18,6 +18,7 @@ params = {
     'lindim': 75,
     'mem_size': 100,
     'batch_size': 125,
+    'max_grad_norm': 50,
     'init_hid': 0.01,
     'nwords': 10000,
 }

@@ -12,6 +12,7 @@ class MemN2N(object):
         self.mem_size = config.get('mem_size', 150)
         self.batch_size = config.get('batch_size', 100)
         self.lindim = config.get('lindim', 75)
+        self.max_grad_norm = config.get('max_grad_norm', 50)
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -32,27 +33,25 @@ class MemN2N(object):
         self.log_loss = []
         self.log_perp = []
 
-        self.build_memory()
-
     def build_memory(self):
         self.global_step = tf.Variable(0, name="global_step")
 
-        A = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
-        B = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
-        C = tf.Variable(tf.random_uniform([self.edim, self.edim], -0.1, 0.1))
+        self.A = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
+        self.B = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
+        self.C = tf.Variable(tf.random_uniform([self.edim, self.edim], -0.1, 0.1))
 
         # Temporal Encoding
-        T_A = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
-        T_B = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
+        self.T_A = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
+        self.T_B = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
 
         # m_i = sum A_ij * x_ij + T_A_i
-        Ain_c = tf.nn.embedding_lookup(A, self.context)
-        Ain_t = tf.nn.embedding_lookup(T_A, self.time)
+        Ain_c = tf.nn.embedding_lookup(self.A, self.context)
+        Ain_t = tf.nn.embedding_lookup(self.T_A, self.time)
         Ain = tf.add(Ain_c, Ain_t)
 
         # c_i = sum B_ij * u + T_B_i
-        Bin_c = tf.nn.embedding_lookup(B, self.context)
-        Bin_t = tf.nn.embedding_lookup(T_B, self.time)
+        Bin_c = tf.nn.embedding_lookup(self.B, self.context)
+        Bin_t = tf.nn.embedding_lookup(self.T_B, self.time)
         Bin = tf.add(Bin_c, Bin_t)
 
         for h in xrange(self.nhop):
@@ -65,7 +64,7 @@ class MemN2N(object):
             Bout = tf.batch_matmul(probs3dim, Bin)
             Bout2dim = tf.reshape(Bout, [-1, self.edim])
 
-            Cout = tf.matmul(self.hid[-1], C)
+            Cout = tf.matmul(self.hid[-1], self.C)
             Dout = tf.add(Cout, Bout2dim)
 
             self.share_list[0].append(Cout)
@@ -81,13 +80,24 @@ class MemN2N(object):
                 self.hid.append(tf.concat(1, [F, K]))
 
     def build_model(self):
-        z = tf.matmul(self.hid[-1], tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1)))
+        self.build_memory()
 
-        self.lr = tf.train.exponential_decay(0.0001, self.global_step,
+        self.W = tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1))
+        z = tf.matmul(self.hid[-1], self.W)
+
+        self.lr = tf.train.exponential_decay(0.001, self.global_step,
                                               100, 0.96, staircase=True)
         self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
-        self.optim = tf.train.GradientDescentOptimizer(self.lr).minimize(self.loss,
-                                                                      global_step=self.global_step)
+        self.opt = tf.train.GradientDescentOptimizer(self.lr)
+
+        params = [self.A, self.B, self.C, self.T_A, self.T_B, self.W]
+        grads_and_vars = self.opt.compute_gradients(self.loss,params)
+        clipped_grads_and_vars = [(tf.clip_by_norm(gv[0], self.max_grad_norm), gv[1]) \
+                                   for gv in grads_and_vars]
+
+        inc = self.global_step.assign_add(1)
+        with tf.control_dependencies([inc]):
+            self.optim = self.opt.apply_gradients(clipped_grads_and_vars)
 
         tf.initialize_all_variables().run()
         self.saver = tf.train.Saver()
@@ -111,17 +121,14 @@ class MemN2N(object):
                 target[b][data[m]] = 1
                 context[b] = data[m - self.mem_size:m]
 
-            import ipdb; ipdb.set_trace()
-            _, loss, self.state = self.sess.run([self.optim,
-                                                 self.loss,
-                                                 self.global_step],
-                                                 feed_dict={
-                                                     self.input: x,
-                                                     self.time: time,
-                                                     self.target: target,
-                                                     self.context: context})
+            loss, self.step = self.sess.run([self.loss,
+                                             self.global_step],
+                                             feed_dict={
+                                                 self.input: x,
+                                                 self.time: time,
+                                                 self.target: target,
+                                                 self.context: context})
             cost += loss
-            print("cost : %s" % cost)
 
         return cost/N/self.batch_size
 
@@ -153,7 +160,6 @@ class MemN2N(object):
                                                                         self.target: target,
                                                                         self.context: context})
             cost += loss
-            print("cost : %s" % cost)
 
         return cost/N/self.batch_size
 
