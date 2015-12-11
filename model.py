@@ -1,68 +1,90 @@
+import math
 import numpy as np
 import tensorflow as tf
 
-def build_memory(params, input, context, time):
-    hid = []
-    hid.append(input)
-    share_list = []
-    share_list.append([])
+class MemN2N(object):
+    def __init__(self, config):
+        self.nwords = config.get('nwords', 100000)
+        self.nhop = config.get('nhop', 3)
+        self.edim = config.get('edim', 125)
+        self.init_hid = config.get('init_hid', 0.1)
+        self.mem_size = config.get('mem_size', 150)
+        self.batch_size = config.get('batch_size', 100)
+        self.lindim = config.get('lindim', 75)
 
-    A = tf.Variable(tf.random_uniform([params['nwords'], params['edim']], -0.1, 0.1))
-    B = tf.Variable(tf.random_uniform([params['nwords'], params['edim']], -0.1, 0.1))
-    C = tf.Variable(tf.random_uniform([params['edim'], params['edim']], -0.1, 0.1))
+        self.input = tf.placeholder(tf.float32, [None, self.edim])
+        self.time = tf.placeholder(tf.int32, [None, self.mem_size])
+        self.target = tf.placeholder(tf.float32, [self.batch_size, self.nwords]) # should pass one-hot-encoded labels
+        self.context = tf.placeholder(tf.int32, [self.batch_size, self.mem_size])
 
-    # Temporal Encoding
-    T_A = tf.Variable(tf.random_uniform([params['mem_size'], params['edim']], -0.1, 0.1))
-    T_B = tf.Variable(tf.random_uniform([params['mem_size'], params['edim']], -0.1, 0.1))
+        self.hid = []
+        self.hid.append(self.input)
+        self.share_list = []
+        self.share_list.append([])
 
-    # m_i = sum A_ij * x_ij + T_A_i
-    Ain_c = tf.nn.embedding_lookup(A, context)
-    Ain_t = tf.nn.embedding_lookup(T_A, time)
-    Ain = tf.add(Ain_c, Ain_t)
+        self.train = None
+        self.loss = None
 
-    # c_i = sum B_ij * u + T_B_i
-    Bin_c = tf.nn.embedding_lookup(B, context)
-    Bin_t = tf.nn.embedding_lookup(T_B, time)
-    Bin = tf.add(Bin_c, Bin_t)
+        self.build_memory()
 
-    for h in xrange(params['nhop']):
-        hid3dim = tf.reshape(hid[-1], [-1, 1, params['edim']])
-        Aout = tf.batch_matmul(hid3dim, Ain, adj_y=True)
-        Aout2dim = tf.reshape(Aout, [-1, params['mem_size']])
-        P = tf.nn.softmax(Aout2dim)
+    def build_memory(self):
+        A = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
+        B = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
+        C = tf.Variable(tf.random_uniform([self.edim, self.edim], -0.1, 0.1))
 
-        probs3dim = tf.reshape(P, [-1, 1, params['mem_size']])
-        Bout = tf.batch_matmul(probs3dim, Bin)
-        Bout2dim = tf.reshape(Bout, [-1, params['edim']])
+        # Temporal Encoding
+        T_A = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
+        T_B = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
 
-        Cout = tf.matmul(hid[-1], C)
-        Dout = tf.add(Cout, Bout2dim)
+        # m_i = sum A_ij * x_ij + T_A_i
+        Ain_c = tf.nn.embedding_lookup(A, self.context)
+        Ain_t = tf.nn.embedding_lookup(T_A, self.time)
+        Ain = tf.add(Ain_c, Ain_t)
 
-        share_list[0].append(Cout)
+        # c_i = sum B_ij * u + T_B_i
+        Bin_c = tf.nn.embedding_lookup(B, self.context)
+        Bin_t = tf.nn.embedding_lookup(T_B, self.time)
+        Bin = tf.add(Bin_c, Bin_t)
 
-        if params['lindim'] == params['edim']:
-            hid.append(Dout)
-        elif params['lindim'] == 0:
-            hid.append(tf.nn.relu(Dout))
-        else:
-            F = tf.slice(Dout, [0, 0], [params['batch_size'], params['lindim']])
-            G = tf.slice(Dout, [0, params['lindim']], [params['batch_size'], params['edim']-params['lindim']])
-            K = tf.nn.relu(G)
-            hid.append(tf.concat(1, [F, K]))
+        for h in xrange(self.nhop):
+            self.hid3dim = tf.reshape(self.hid[-1], [-1, 1, self.edim])
+            Aout = tf.batch_matmul(self.hid3dim, Ain, adj_y=True)
+            Aout2dim = tf.reshape(Aout, [-1, self.mem_size])
+            P = tf.nn.softmax(Aout2dim)
 
-    return hid, share_list
+            probs3dim = tf.reshape(P, [-1, 1, self.mem_size])
+            Bout = tf.batch_matmul(probs3dim, Bin)
+            Bout2dim = tf.reshape(Bout, [-1, self.edim])
 
-def g_build_model(params):
-    input = tf.placeholder(tf.float32, [None, params['edim']])
-    time = tf.placeholder(tf.int32, [None, params['mem_size']])
-    # should pass one-hot-encoded labels
-    target = tf.placeholder(tf.float32, [params['batch_size'], params['nwords']])
-    context = tf.placeholder(tf.int32, [params['batch_size'], params['mem_size']])
+            Cout = tf.matmul(self.hid[-1], C)
+            Dout = tf.add(Cout, Bout2dim)
 
-    hid, share_list = build_memory(params, input, context, time)
-    z = tf.matmul(hid[-1], tf.Variable(tf.random_uniform([params['edim'], params['nwords']], -0.1, 0.1)))
+            self.share_list[0].append(Cout)
 
-    loss = softmax_cross_entropy_with_logits(z, target)
-    train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+            if self.lindim == self.edim:
+                self.hid.append(Dout)
+            elif self.lindim == 0:
+                self.hid.append(tf.nn.relu(Dout))
+            else:
+                F = tf.slice(Dout, [0, 0], [self.batch_size, self.lindim])
+                G = tf.slice(Dout, [0, self.lindim], [self.batch_size, self.edim-self.lindim])
+                K = tf.nn.relu(G)
+                self.hid.append(tf.concat(1, [F, K]))
 
-    return None, loss
+    def build_model(self):
+        z = tf.matmul(self.hid[-1], tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1)))
+
+        self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
+        self.train = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
+
+    def train(self, words):
+        N = math.ceil(words.shape[1] / self.batch_size)
+        cost = 0
+        y = np.ones(1)
+
+        x = np.ndarray([self.batch_size, self.mem_size], dtype=np.float32)
+        x.fill(self.init_hid)
+
+        time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
+        for idx in xrange(self.mem_size):
+            time

@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from data import g_read_words
-from model import g_build_model
+from model import MemN2N
 
 count = []
 word2idx = {}
@@ -21,10 +21,12 @@ params = {
     'nwords': 10000,
 }
 
-with tf.Session() as sess:
-    _, model = g_build_model(params)
+if __name__ == '__main__':
+    with tf.Session() as sess:
+        model = MemN2N(params)
+        model.g_build_model()
 
-    init = tf.initialize_all_variables()
-    sess.run(init)
+        init = tf.initialize_all_variables()
+        sess.run(init)
 
-    tf.train.write_graph(sess.graph_def, '/tmp/MemN2N', 'graph.pbtxt')
+        tf.train.write_graph(sess.graph_def, '/tmp/MemN2N', 'graph.pbtxt')
