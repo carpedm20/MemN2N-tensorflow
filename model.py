@@ -113,6 +113,7 @@ class MemN2N(object):
 
         x = np.ndarray([self.batch_size, self.edim], dtype=np.float32)
         time = np.ndarray([self.batch_size, self.mem_size], dtype=np.int32)
+        target = np.zeros([self.batch_size, self.nwords]) # one-hot-encoded
         context = np.ndarray([self.batch_size, self.mem_size])
 
         x.fill(self.init_hid)
@@ -125,8 +126,7 @@ class MemN2N(object):
 
         for idx in xrange(N):
             if self.show: bar.next()
-            target = np.zeros([self.batch_size, self.nwords]) # one-hot-encoded
-
+            target.fill(0)
             for b in xrange(self.batch_size):
                 m = random.randrange(self.mem_size, len(data))
                 target[b][data[m]] = 1
@@ -165,6 +165,7 @@ class MemN2N(object):
         m = self.mem_size 
         for idx in xrange(N):
             if self.show: bar.next()
+            target.fill(0)
             for b in xrange(self.batch_size):
                 target[b][data[m]] = 1
                 context[b] = data[m - self.mem_size:m]
