@@ -17,16 +17,16 @@ Usage
 
 To train a model with 6 hops and memory size of 100 (best model described in the paper), run the following command:
 
-    $ python main.py --nhop 6 --memsize 100
+    $ python main.py --nhop 6 --mem_size 100
 
 To see all training options, run:
 
-    $ python main.lua --help
+    $ python main.py --help
 
 (Optional) If you want to see a progress bar, install `progress` with `pip`:
 
     $ pip install progress
-    $ python main.py --show --nhop 6 --memsize 100
+    $ python main.py --show True --nhop 6 --mem_size 100
 
 
 Author
