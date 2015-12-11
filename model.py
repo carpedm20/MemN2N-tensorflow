@@ -5,15 +5,19 @@ import tensorflow as tf
 
 class MemN2N(object):
     def __init__(self, config, sess):
-        self.nwords = config.get('nwords', 100000)
-        self.nhop = config.get('nhop', 3)
-        self.edim = config.get('edim', 125)
-        self.init_hid = config.get('init_hid', 0.1)
-        self.mem_size = config.get('mem_size', 150)
-        self.batch_size = config.get('batch_size', 100)
-        self.lindim = config.get('lindim', 75)
-        self.max_grad_norm = config.get('max_grad_norm', 50)
-        self.show = config.get('show', False)
+        self.nwords = config.nwords
+        self.nwords = config.nwords
+        self.init_lr = config.init_lr
+        self.init_hid = config.init_hid
+        self.init_std = config.init_std
+        self.batch_size = config.batch_size
+        self.nepoch = config.nepoch
+        self.nhop = config.nhop
+        self.edim = config.edim
+        self.mem_size = config.mem_size
+        self.lindim = config.lindim
+        self.max_grad_norm = config.max_grad_norm
+        self.show = config.show
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -37,13 +41,13 @@ class MemN2N(object):
     def build_memory(self):
         self.global_step = tf.Variable(0, name="global_step")
 
-        self.A = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
-        self.B = tf.Variable(tf.random_uniform([self.nwords, self.edim], -0.1, 0.1))
-        self.C = tf.Variable(tf.random_uniform([self.edim, self.edim], -0.1, 0.1))
+        self.A = tf.Variable(tf.random_normal([self.nwords, self.edim], stddev=self.init_std))
+        self.B = tf.Variable(tf.random_normal([self.nwords, self.edim], stddev=self.init_std))
+        self.C = tf.Variable(tf.random_normal([self.edim, self.edim], stddev=self.init_std))
 
         # Temporal Encoding
-        self.T_A = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
-        self.T_B = tf.Variable(tf.random_uniform([self.mem_size, self.edim], -0.1, 0.1))
+        self.T_A = tf.Variable(tf.random_normal([self.mem_size, self.edim], stddev=self.init_std))
+        self.T_B = tf.Variable(tf.random_normal([self.mem_size, self.edim], stddev=self.init_std))
 
         # m_i = sum A_ij * x_ij + T_A_i
         Ain_c = tf.nn.embedding_lookup(self.A, self.context)
@@ -83,10 +87,10 @@ class MemN2N(object):
     def build_model(self):
         self.build_memory()
 
-        self.W = tf.Variable(tf.random_uniform([self.edim, self.nwords], -0.1, 0.1))
+        self.W = tf.Variable(tf.random_normal([self.edim, self.nwords], stddev=self.init_std))
         z = tf.matmul(self.hid[-1], self.W)
 
-        self.lr = tf.train.exponential_decay(0.001, self.global_step,
+        self.lr = tf.train.exponential_decay(self.init_lr, self.global_step,
                                               100, 0.96, staircase=True)
         self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
         self.opt = tf.train.GradientDescentOptimizer(self.lr)
@@ -127,14 +131,17 @@ class MemN2N(object):
                 target[b][data[m]] = 1
                 context[b] = data[m - self.mem_size:m]
 
-            loss, self.step = self.sess.run([self.loss,
-                                             self.global_step],
-                                             feed_dict={
-                                                 self.input: x,
-                                                 self.time: time,
-                                                 self.target: target,
-                                                 self.context: context})
-            cost += loss
+            import ipdb; ipdb.set_trace()
+            _, loss, self.step = self.sess.run([self.optim,
+                                                self.loss,
+                                                self.global_step],
+                                                feed_dict={
+                                                    self.input: x,
+                                                    self.time: time,
+                                                    self.target: target,
+                                                    self.context: context})
+            cost += np.sum(loss)
+            print(cost, N, self.batch_size, cost/N/self.batch_size)
 
         if self.show: bar.finish()
         return cost/N/self.batch_size
@@ -167,17 +174,17 @@ class MemN2N(object):
                 if m >= len(data):
                     m = self.mem_size
 
-            _, loss = self.sess.run([self.optim, self.loss], feed_dict={self.input: x,
-                                                                        self.time: time,
-                                                                        self.target: target,
-                                                                        self.context: context})
-            cost += loss
+            loss = self.sess.run([self.loss], feed_dict={self.input: x,
+                                                         self.time: time,
+                                                         self.target: target,
+                                                         self.context: context})
+            cost += np.sum(loss)
 
         if self.show: bar.finish()
         return cost/N/self.batch_size
 
-    def run(self, train_data, test_data, epochs):
-        for idx in xrange(epochs):
+    def run(self, train_data, test_data):
+        for idx in xrange(self.nepoch):
             train_loss = np.sum(self.train(train_data))
             test_loss = np.sum(self.test(test_data))
 
