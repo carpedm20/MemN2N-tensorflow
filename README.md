@@ -9,7 +9,7 @@ Tensorflow implementation of [End-To-End Memory Networks](http://arxiv.org/abs/1
 Setup
 -----
 
-This code requires [Tensorflow](https://www.tensorflow.org/). Also, it uses CUDA to run on GPU for faster training. To train on Penn Treebank corpus, you should download it separately (should be formatted like [this](http://github.com/wojzaremba/lstm/tree/master/data)) and put in data subdirectory.
+This code requires [Tensorflow](https://www.tensorflow.org/) and uses Penn Treebank corpus for language model experiments. You can use another data which is formated like [this](data/).
 
 
 Usage
