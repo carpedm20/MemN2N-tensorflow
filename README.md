@@ -1,15 +1,15 @@
 End-To-End Memory Networks in Tensorflow
 ========================================
 
-Tensorflow implementation of [End-To-End Memory Networks](http://arxiv.org/abs/1503.08895v4) for language modeling (see Section 5 of the paper). The original torch code and dataset can be found [here](https://github.com/facebook/MemNN/).
+Tensorflow implementation of [End-To-End Memory Networks](http://arxiv.org/abs/1503.08895v4) for language modeling (see Section 5 of the paper). The original torch code can be found [here](https://github.com/facebook/MemNN/).
 
 ![alt tag](http://i.imgur.com/nv89JLc.png)
 
 
-Setup
------
+Prerequisites
+-------------
 
-This code requires [Tensorflow](https://www.tensorflow.org/) and uses Penn Treebank corpus for language model experiments. You can use another data which is formated like [this](data/).
+This code requires [Tensorflow](https://www.tensorflow.org/). There is a set of sample Penn Tree Bank (PTB) corpus in `data` directory, which is a popular benchmark for measuring quality of these models. But you can use your own text data set which should be formated like [this](data/).
 
 
 Usage

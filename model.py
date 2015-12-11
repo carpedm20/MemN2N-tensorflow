@@ -178,11 +178,11 @@ class MemN2N(object):
 
     def run(self, train_data, test_data, epochs):
         for idx in xrange(epochs):
-            train_loss = self.train(train_data)
-            test_loss = self.test(test_data)
+            train_loss = np.sum(self.train(train_data))
+            test_loss = np.sum(self.test(test_data))
 
-            self.log_loss.append({'train': train_loss, 'test': test_loss})
-            self.log_perp.append({'train': math.exp(train_loss), 'test': math.ext(test_loss)})
+            self.log_loss.append([train_loss, test_loss])
+            self.log_perp.append([math.exp(train_loss), math.ext(test_loss)])
 
             state = {
                 'perplexity': math.exp(train_loss),
