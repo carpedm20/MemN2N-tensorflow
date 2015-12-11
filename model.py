@@ -111,6 +111,7 @@ class MemN2N(object):
                 target[b][data[m]] = 1
                 context[b] = data[m - self.mem_size:m]
 
+            import ipdb; ipdb.set_trace()
             _, loss, self.state = self.sess.run([self.optim,
                                                  self.loss,
                                                  self.global_step],

@@ -22,7 +22,8 @@ def g_read_words(fname, count, word2idx):
         word2idx['<eos>'] = 0
 
     for word, _ in count:
-        word2idx[word] = len(word2idx)
+        if not word2idx.has_key(word):
+            word2idx[word] = len(word2idx)
 
     data = list()
     for line in lines:

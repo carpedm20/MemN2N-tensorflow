@@ -5,6 +5,7 @@ from model import MemN2N
 
 count = []
 word2idx = {}
+
 train_data = g_read_words('data/ptb.train.txt', count, word2idx)
 valid_data = g_read_words('data/ptb.valid.txt', count, word2idx)
 test_data = g_read_words('data/ptb.test.txt', count, word2idx)
