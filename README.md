@@ -95,6 +95,9 @@ The training output looks like:
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
     {'perplexity': 136.1443535538306, 'epoch': 3, 'valid_perplexity': 161.62522958776597, 'learning_rate': 0.01}
+    Training |################################| 100.0% | ETA: 0s
+    Testing |################################| 100.0% | ETA: 0s
+    {'perplexity': 119.15373237680929, 'epoch': 4, 'valid_perplexity': 149.00768378137946, 'learning_rate': 0.01}
     Training |##############                  | 44.0% | ETA: 378s
 
 The performance comparison with the original paper will be upadated soon.
