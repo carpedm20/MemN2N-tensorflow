@@ -7,7 +7,6 @@ class MemN2N(object):
     def __init__(self, config, sess):
         self.nwords = config.nwords
         self.nwords = config.nwords
-        self.init_lr = config.init_lr
         self.init_hid = config.init_hid
         self.init_std = config.init_std
         self.batch_size = config.batch_size
@@ -30,6 +29,7 @@ class MemN2N(object):
         self.share_list.append([])
 
         self.lr = None
+        self.current_lr = config.init_lr
         self.loss = None
         self.step = None
         self.optim = None
@@ -90,9 +90,9 @@ class MemN2N(object):
         self.W = tf.Variable(tf.random_normal([self.edim, self.nwords], stddev=self.init_std))
         z = tf.matmul(self.hid[-1], self.W)
 
-        self.lr = tf.train.exponential_decay(self.init_lr, self.global_step,
-                                              100, 0.96, staircase=True)
         self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
+
+        self.lr = tf.Variable(self.current_lr)
         self.opt = tf.train.GradientDescentOptimizer(self.lr)
 
         params = [self.A, self.B, self.C, self.T_A, self.T_B, self.W]
@@ -194,6 +194,7 @@ class MemN2N(object):
             state = {
                 'perplexity': math.exp(train_loss),
                 'epoch': idx,
+                'learning_rate': selr.current_lr,
                 'valid_perplexity': math.exp(test_loss)
             }
             print(state)
@@ -202,3 +203,8 @@ class MemN2N(object):
                 self.saver.save(self.sess,
                                 "MemN2N.model",
                                  global_step = self.step.astype(int))
+
+                if len(self.log_loss) > 1 and self.log_cost[idx][2] > self.log_cost[idx-1][2] * 0.9999:
+                    self.current_lr = self.current_lr / 1.5
+                    self.lr.assign(self.current_lr).eval()
+                if self.current_lr < 1e-5: break
