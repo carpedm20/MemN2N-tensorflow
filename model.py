@@ -188,6 +188,7 @@ class MemN2N(object):
             train_loss = np.sum(self.train(train_data))
             test_loss = np.sum(self.test(test_data))
 
+            # Logging
             self.log_loss.append([train_loss, test_loss])
             self.log_perp.append([math.exp(train_loss), math.exp(test_loss)])
 
@@ -199,12 +200,13 @@ class MemN2N(object):
             }
             print(state)
 
+            # Learning rate annealing
+            if len(self.log_loss) > 1 and self.log_cost[idx][2] > self.log_cost[idx-1][2] * 0.9999:
+                self.current_lr = self.current_lr / 1.5
+                self.lr.assign(self.current_lr).eval()
+            if self.current_lr < 1e-5: break
+
             if idx % 10 == 0:
                 self.saver.save(self.sess,
                                 "MemN2N.model",
                                  global_step = self.step.astype(int))
-
-                if len(self.log_loss) > 1 and self.log_cost[idx][2] > self.log_cost[idx-1][2] * 0.9999:
-                    self.current_lr = self.current_lr / 1.5
-                    self.lr.assign(self.current_lr).eval()
-                if self.current_lr < 1e-5: break

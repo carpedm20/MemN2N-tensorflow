@@ -1,8 +1,10 @@
+import pprint
 import tensorflow as tf
 
-from utils import pp
 from data import read_data
 from model import MemN2N
+
+pp = pprint.PrettyPrinter()
 
 tf.app.flags.DEFINE_integer("edim", 150, "internal state dimension [150]")
 tf.app.flags.DEFINE_integer("lindim", 75, "linear part of the state [75]")
