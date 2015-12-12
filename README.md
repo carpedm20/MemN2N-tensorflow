@@ -49,7 +49,7 @@ which will print:
       --data_dir DATA_DIR   data directory [data]
       --data_name DATA_NAME
                             data set name [ptb]
-      --show SHOW           print progress.
+      --show SHOW           print progress [False]
       --noshow
 
 (Optional) If you want to see a progress bar, install `progress` with `pip`:

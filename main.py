@@ -16,7 +16,7 @@ tf.app.flags.DEFINE_float("init_std", 0.05, "weight initialization std [0.05]")
 tf.app.flags.DEFINE_float("max_grad_norm", 50, "clip gradients to this norm [50]")
 tf.app.flags.DEFINE_string("data_dir", "data", "data directory [data]")
 tf.app.flags.DEFINE_string("data_name", "ptb", "data set name [ptb]")
-tf.app.flags.DEFINE_boolean("show", False, "print progress.")
+tf.app.flags.DEFINE_boolean("show", False, "print progress [False]")
 
 FLAGS = tf.app.flags.FLAGS
 
