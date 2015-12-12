@@ -160,7 +160,7 @@ class MemN2N(object):
 
         if self.show:
             from utils import ProgressBar
-            bar = ProgressBar('Training', max=N)
+            bar = ProgressBar('Testing', max=N)
 
         m = self.mem_size 
         for idx in xrange(N):

@@ -58,6 +58,45 @@ which will print:
     $ python main.py --show True --nhop 6 --mem_size 100
 
 
+Performance
+-----------
+
+The training output looks like:
+
+    $ python main.py --nhop 6 --mem_size 100 --show True
+    Read 929589 words from data/ptb.train.txt
+    Read 73760 words from data/ptb.valid.txt
+    Read 82430 words from data/ptb.test.txt
+    {'batch_size': 128,
+    'data_dir': 'data',
+    'data_name': 'ptb',
+    'edim': 150,
+    'init_hid': 0.1,
+    'init_lr': 0.01,
+    'init_std': 0.05,
+    'lindim': 75,
+    'max_grad_norm': 50,
+    'mem_size': 100,
+    'nepoch': 100,
+    'nhop': 6,
+    'nwords': 10000,
+    'show': True}
+    I tensorflow/core/common_runtime/local_device.cc:25] Local device intra op parallelism threads: 12
+    I tensorflow/core/common_runtime/direct_session.cc:45] Direct session inter op parallelism threads: 12
+    Training |################################| 100.0% | ETA: 0s
+    Testing |################################| 100.0% | ETA: 0s
+    {'perplexity': 507.3536108810464, 'epoch': 0, 'valid_perplexity': 285.19489755719286, 'learning_rate': 0.01}
+    Training |################################| 100.0% | ETA: 0s
+    Testing |################################| 100.0% | ETA: 0s
+    {'perplexity': 218.49577035468886, 'epoch': 1, 'valid_perplexity': 231.73457031084268, 'learning_rate': 0.01}
+    Training |################################| 100.0% | ETA: 0s
+    Testing |################################| 100.0% | ETA: 0s
+    {'perplexity': 163.5527845871247, 'epoch': 2, 'valid_perplexity': 175.38771414841014, 'learning_rate': 0.01}
+    Training |##############                  | 44.0% | ETA: 378s
+
+The performance comparison with the original paper will be upadated soon.
+
+
 Author
 ------
 
