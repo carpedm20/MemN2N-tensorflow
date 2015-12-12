@@ -1,4 +1,7 @@
+import pprint
 from progress.bar import Bar
+
+pp = pprint.PrettyPrinter()
 
 class ProgressBar(Bar):
     message = 'Loading'

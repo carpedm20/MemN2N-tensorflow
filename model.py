@@ -194,7 +194,7 @@ class MemN2N(object):
             state = {
                 'perplexity': math.exp(train_loss),
                 'epoch': idx,
-                'learning_rate': selr.current_lr,
+                'learning_rate': self.current_lr,
                 'valid_perplexity': math.exp(test_loss)
             }
             print(state)
