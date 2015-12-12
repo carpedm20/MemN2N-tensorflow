@@ -85,37 +85,19 @@ The training output looks like:
     I tensorflow/core/common_runtime/direct_session.cc:45] Direct session inter op parallelism threads: 12
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 706.9750327516226, 'epoch': 0, 'valid_perplexity': 484.1358331457669, 'learning_rate': 0.01}
+    {'perplexity': 507.3536108810464, 'epoch': 0, 'valid_perplexity': 285.19489755719286, 'learning_rate': 0.01}
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 461.76683044676156, 'epoch': 1, 'valid_perplexity': 354.81370402184035, 'learning_rate': 0.01}
+    {'perplexity': 218.49577035468886, 'epoch': 1, 'valid_perplexity': 231.73457031084268, 'learning_rate': 0.01}
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 334.2083182652857, 'epoch': 2, 'valid_perplexity': 302.1831648697854, 'learning_rate': 0.01}
+    {'perplexity': 163.5527845871247, 'epoch': 2, 'valid_perplexity': 175.38771414841014, 'learning_rate': 0.01}
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 266.82651384396894, 'epoch': 3, 'valid_perplexity': 236.20763192385064, 'learning_rate': 0.01}
+    {'perplexity': 136.1443535538306, 'epoch': 3, 'valid_perplexity': 161.62522958776597, 'learning_rate': 0.01}
     Training |################################| 100.0% | ETA: 0s
     Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 208.65395416960874, 'epoch': 4, 'valid_perplexity': 214.25900445147872, 'learning_rate': 0.01}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 178.01065105989431, 'epoch': 5, 'valid_perplexity': 197.68565892455698, 'learning_rate': 0.01}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 159.62503948293656, 'epoch': 6, 'valid_perplexity': 172.76667355642132, 'learning_rate': 0.01}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 144.20704830477644, 'epoch': 7, 'valid_perplexity': 179.32751346077671, 'learning_rate': 0.01}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 119.2060264104084, 'epoch': 8, 'valid_perplexity': 159.85036344063835, 'learning_rate': 0.006666666666666667}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 110.78052987557061, 'epoch': 9, 'valid_perplexity': 154.4743895514825, 'learning_rate': 0.006666666666666667}
-    Training |################################| 100.0% | ETA: 0s
-    Testing |################################| 100.0% | ETA: 0s
-    {'perplexity': 105.14122742021145, 'epoch': 10, 'valid_perplexity': 151.66942464731136, 'learning_rate': 0.006666666666666667}
+    {'perplexity': 119.15373237680929, 'epoch': 4, 'valid_perplexity': 149.00768378137946, 'learning_rate': 0.01}
     Training |##############                  | 44.0% | ETA: 378s
 
 The performance comparison with the original paper will be upadated soon.
