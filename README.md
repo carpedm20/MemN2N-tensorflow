@@ -49,14 +49,19 @@ which will print:
       --data_dir DATA_DIR   data directory [data]
       --data_name DATA_NAME
                             data set name [ptb]
+      --is_test IS_TEST     True for testing, False for Training [False]
+      --nois_test
       --show SHOW           print progress [False]
       --noshow
 
 (Optional) If you want to see a progress bar, install `progress` with `pip`:
 
     $ pip install progress
-    $ python main.py --show True --nhop 6 --mem_size 100
+    $ python main.py --nhop 6 --mem_size 100 --show True
 
+After training is finished, you can test and validate with:
+
+    $ python main.py --is_test True --show True
 
 Performance
 -----------
