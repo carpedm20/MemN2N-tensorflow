@@ -65,9 +65,6 @@ After training is finished, you can test and validate with:
 
     $ python main.py --is_test True --show True
 
-Performance
------------
-
 The training output looks like:
 
     $ python main.py --nhop 6 --mem_size 100 --show True
@@ -107,6 +104,9 @@ The training output looks like:
     {'perplexity': 119.15373237680929, 'epoch': 4, 'valid_perplexity': 149.00768378137946, 'learning_rate': 0.01}
     Training |##############                  | 44.0% | ETA: 378s
 
+
+Performance
+-----------
 
 The perplexity on the test sets of Penn Treebank corpora.
 
