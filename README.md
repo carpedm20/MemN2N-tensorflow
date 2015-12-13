@@ -107,7 +107,13 @@ The training output looks like:
     {'perplexity': 119.15373237680929, 'epoch': 4, 'valid_perplexity': 149.00768378137946, 'learning_rate': 0.01}
     Training |##############                  | 44.0% | ETA: 378s
 
-The performance comparison with the original paper will be upadated soon.
+
+The perplexity on the test sets of Penn Treebank corpora.
+
+| # of hidden | # of hops | memory size | MemN2N (Sainbayar 2015) |  This repo. |
+|:-----------:|:---------:|:-----------:|:-----------------------:|:-----------:|
+|     150     |     3     |     100     |           122           |     129     |
+|     150     |     6     |     150     |           114           | in progress |
 
 
 Author
