@@ -19,6 +19,7 @@ class MemN2N(object):
 
         self.show = config.show
         self.is_test = config.is_test
+        self.checkpoint_dir = config.checkpoint_dir
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -211,7 +212,7 @@ class MemN2N(object):
 
                 if idx % 10 == 0:
                     self.saver.save(self.sess,
-                                    "MemN2N.model",
+                                    os.path.join(self.checkpoint_dir, "MemN2N.model"),
                                     global_step = self.step.astype(int))
         else:
             self.load()
@@ -227,7 +228,7 @@ class MemN2N(object):
 
     def load(self):
         print(" [*] Reading checkpoints...")
-        ckpt = tf.train.get_checkpoint_state('./')
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
             self.saver.restore(self.sess, ckpt.model_checkpoint_path)
         else:

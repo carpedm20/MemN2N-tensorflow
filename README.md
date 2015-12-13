@@ -46,6 +46,8 @@ which will print:
       --init_std INIT_STD   weight initialization std [0.05]
       --max_grad_norm MAX_GRAD_NORM
                             clip gradients to this norm [50]
+      --checkpoint_dir CHECKPOINT_DIR
+                            checkpoint directory [checkpoints]
       --data_dir DATA_DIR   data directory [data]
       --data_name DATA_NAME
                             data set name [ptb]
