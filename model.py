@@ -1,3 +1,4 @@
+import os
 import math
 import random
 import numpy as np
@@ -20,6 +21,9 @@ class MemN2N(object):
         self.show = config.show
         self.is_test = config.is_test
         self.checkpoint_dir = config.checkpoint_dir
+
+        if not os.path.isdir(self.checkpoint_dir):
+            raise Exception(" [!] Directory %s not found" % self.checkpoint_dir)
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -232,5 +236,5 @@ class MemN2N(object):
         if ckpt and ckpt.model_checkpoint_path:
             self.saver.restore(self.sess, ckpt.model_checkpoint_path)
         else:
-            raise(" [!] Trest mode but no checkpoint found")
+            raise Exception(" [!] Trest mode but no checkpoint found")
 

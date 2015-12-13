@@ -110,10 +110,10 @@ Performance
 
 The perplexity on the test sets of Penn Treebank corpora.
 
-| # of hidden | # of hops | memory size | MemN2N (Sainbayar 2015) |  This repo. |
-|:-----------:|:---------:|:-----------:|:-----------------------:|:-----------:|
-|     150     |     3     |     100     |           122           |     129     |
-|     150     |     6     |     150     |           114           | in progress |
+| # of hidden | # of hops | memory size | MemN2N (Sukhbaatar 2015) |  This repo. |
+|:-----------:|:---------:|:-----------:|:------------------------:|:-----------:|
+|     150     |     3     |     100     |            122           |     129     |
+|     150     |     6     |     150     |            114           | in progress |
 
 
 Author
