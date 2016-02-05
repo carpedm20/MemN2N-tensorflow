@@ -46,20 +46,24 @@ which will print:
       --init_std INIT_STD   weight initialization std [0.05]
       --max_grad_norm MAX_GRAD_NORM
                             clip gradients to this norm [50]
+      --checkpoint_dir CHECKPOINT_DIR
+                            checkpoint directory [checkpoints]
       --data_dir DATA_DIR   data directory [data]
       --data_name DATA_NAME
                             data set name [ptb]
+      --is_test IS_TEST     True for testing, False for Training [False]
+      --nois_test
       --show SHOW           print progress [False]
       --noshow
 
 (Optional) If you want to see a progress bar, install `progress` with `pip`:
 
     $ pip install progress
-    $ python main.py --show True --nhop 6 --mem_size 100
+    $ python main.py --nhop 6 --mem_size 100 --show True
 
+After training is finished, you can test and validate with:
 
-Performance
------------
+    $ python main.py --is_test True --show True
 
 The training output looks like:
 
@@ -100,7 +104,16 @@ The training output looks like:
     {'perplexity': 119.15373237680929, 'epoch': 4, 'valid_perplexity': 149.00768378137946, 'learning_rate': 0.01}
     Training |##############                  | 44.0% | ETA: 378s
 
-The performance comparison with the original paper will be upadated soon.
+
+Performance
+-----------
+
+The perplexity on the test sets of Penn Treebank corpora.
+
+| # of hidden | # of hops | memory size | MemN2N (Sukhbaatar 2015) |  This repo. |
+|:-----------:|:---------:|:-----------:|:------------------------:|:-----------:|
+|     150     |     3     |     100     |            122           |     129     |
+|     150     |     6     |     150     |            114           | in progress |
 
 
 Author

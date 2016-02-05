@@ -1,3 +1,4 @@
+import os
 import math
 import random
 import numpy as np
@@ -16,7 +17,13 @@ class MemN2N(object):
         self.mem_size = config.mem_size
         self.lindim = config.lindim
         self.max_grad_norm = config.max_grad_norm
+
         self.show = config.show
+        self.is_test = config.is_test
+        self.checkpoint_dir = config.checkpoint_dir
+
+        if not os.path.isdir(self.checkpoint_dir):
+            raise Exception(" [!] Directory %s not found" % self.checkpoint_dir)
 
         self.input = tf.placeholder(tf.float32, [None, self.edim], name="input")
         self.time = tf.placeholder(tf.int32, [None, self.mem_size], name="time")
@@ -122,7 +129,7 @@ class MemN2N(object):
 
         if self.show:
             from utils import ProgressBar
-            bar = ProgressBar('Training', max=N)
+            bar = ProgressBar('Train', max=N)
 
         for idx in xrange(N):
             if self.show: bar.next()
@@ -145,7 +152,7 @@ class MemN2N(object):
         if self.show: bar.finish()
         return cost/N/self.batch_size
 
-    def test(self, data):
+    def test(self, data, label='Test'):
         N = int(math.ceil(len(data) / self.batch_size))
         cost = 0
 
@@ -160,7 +167,7 @@ class MemN2N(object):
 
         if self.show:
             from utils import ProgressBar
-            bar = ProgressBar('Testing', max=N)
+            bar = ProgressBar(label, max=N)
 
         m = self.mem_size 
         for idx in xrange(N):
@@ -184,29 +191,50 @@ class MemN2N(object):
         return cost/N/self.batch_size
 
     def run(self, train_data, test_data):
-        for idx in xrange(self.nepoch):
-            train_loss = np.sum(self.train(train_data))
-            test_loss = np.sum(self.test(test_data))
+        if not self.is_test:
+            for idx in xrange(self.nepoch):
+                train_loss = np.sum(self.train(train_data))
+                test_loss = np.sum(self.test(test_data, label='Validation'))
 
-            # Logging
-            self.log_loss.append([train_loss, test_loss])
-            self.log_perp.append([math.exp(train_loss), math.exp(test_loss)])
+                # Logging
+                self.log_loss.append([train_loss, test_loss])
+                self.log_perp.append([math.exp(train_loss), math.exp(test_loss)])
+
+                state = {
+                    'perplexity': math.exp(train_loss),
+                    'epoch': idx,
+                    'learning_rate': self.current_lr,
+                    'valid_perplexity': math.exp(test_loss)
+                }
+                print(state)
+
+                # Learning rate annealing
+                if len(self.log_loss) > 1 and self.log_loss[idx][1] > self.log_loss[idx-1][1] * 0.9999:
+                    self.current_lr = self.current_lr / 1.5
+                    self.lr.assign(self.current_lr).eval()
+                if self.current_lr < 1e-5: break
+
+                if idx % 10 == 0:
+                    self.saver.save(self.sess,
+                                    os.path.join(self.checkpoint_dir, "MemN2N.model"),
+                                    global_step = self.step.astype(int))
+        else:
+            self.load()
+
+            valid_loss = np.sum(self.test(train_data, label='Validation'))
+            test_loss = np.sum(self.test(test_data, label='Test'))
 
             state = {
-                'perplexity': math.exp(train_loss),
-                'epoch': idx,
-                'learning_rate': self.current_lr,
-                'valid_perplexity': math.exp(test_loss)
+                'valid_perplexity': math.exp(valid_loss),
+                'test_perplexity': math.exp(test_loss)
             }
             print(state)
 
-            # Learning rate annealing
-            if len(self.log_loss) > 1 and self.log_loss[idx][1] > self.log_loss[idx-1][1] * 0.9999:
-                self.current_lr = self.current_lr / 1.5
-                self.lr.assign(self.current_lr).eval()
-            if self.current_lr < 1e-5: break
+    def load(self):
+        print(" [*] Reading checkpoints...")
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            self.saver.restore(self.sess, ckpt.model_checkpoint_path)
+        else:
+            raise Exception(" [!] Trest mode but no checkpoint found")
 
-            if idx % 10 == 0:
-                self.saver.save(self.sess,
-                                "MemN2N.model",
-                                 global_step = self.step.astype(int))
