@@ -1,3 +1,4 @@
+import os
 import pprint
 import tensorflow as tf
 
@@ -29,6 +30,9 @@ FLAGS = flags.FLAGS
 def main(_):
     count = []
     word2idx = {}
+
+    if not os.path.exists(FLAGS.checkpoint_dir):
+      os.makedirs(FLAGS.checkpoint_dir)
 
     train_data = read_data('%s/%s.train.txt' % (FLAGS.data_dir, FLAGS.data_name), count, word2idx)
     valid_data = read_data('%s/%s.valid.txt' % (FLAGS.data_dir, FLAGS.data_name), count, word2idx)
