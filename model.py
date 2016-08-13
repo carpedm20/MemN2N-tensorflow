@@ -3,6 +3,7 @@ import math
 import random
 import numpy as np
 import tensorflow as tf
+from past.builtins import xrange
 
 class MemN2N(object):
     def __init__(self, config, sess):

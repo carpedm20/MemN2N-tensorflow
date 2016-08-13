@@ -22,7 +22,7 @@ def read_data(fname, count, word2idx):
         word2idx['<eos>'] = 0
 
     for word, _ in count:
-        if not word2idx.has_key(word):
+        if word not in word2idx:
             word2idx[word] = len(word2idx)
 
     data = list()
