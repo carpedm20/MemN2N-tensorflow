@@ -14,11 +14,11 @@ This code requires [Tensorflow](https://www.tensorflow.org/). There is a set of 
 
 When you use docker image tensorflw/tensorflow:latest-gpu, you need to python package future.
 
-    $ pip install future
+    $ pip install future
     
 If you want to use --show True option, you need to pytho package progress.
 
-    $ pip install progress
+    $ pip install progress
     
 Usage
 -----
