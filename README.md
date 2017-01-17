@@ -12,6 +12,11 @@ Prerequisites
 This code requires [Tensorflow](https://www.tensorflow.org/). There is a set of sample Penn Tree Bank (PTB) corpus in `data` directory, which is a popular benchmark for measuring quality of these models. But you can use your own text data set which should be formated like [this](data/).
 
 
+When you use docker image tensorflw/tensorflow:latest-gpu, you need to python package future.
+
+    $ pip install future
+
+
 Usage
 -----
 

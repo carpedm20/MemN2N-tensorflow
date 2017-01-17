@@ -112,7 +112,7 @@ class MemN2N(object):
         with tf.control_dependencies([inc]):
             self.optim = self.opt.apply_gradients(clipped_grads_and_vars)
 
-        tf.initialize_all_variables().run()
+        tf.global_variables_initializer().run()
         self.saver = tf.train.Saver()
 
     def train(self, data):
