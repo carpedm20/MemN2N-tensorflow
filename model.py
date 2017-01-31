@@ -8,7 +8,6 @@ from past.builtins import xrange
 class MemN2N(object):
     def __init__(self, config, sess):
         self.nwords = config.nwords
-        self.nwords = config.nwords
         self.init_hid = config.init_hid
         self.init_std = config.init_std
         self.batch_size = config.batch_size
