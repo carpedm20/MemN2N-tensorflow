@@ -68,12 +68,12 @@ class MemN2N(object):
 
         for h in xrange(self.nhop):
             self.hid3dim = tf.reshape(self.hid[-1], [-1, 1, self.edim])
-            Aout = tf.batch_matmul(self.hid3dim, Ain, adj_y=True)
+            Aout = tf.matmul(self.hid3dim, Ain, adj_y=True)
             Aout2dim = tf.reshape(Aout, [-1, self.mem_size])
             P = tf.nn.softmax(Aout2dim)
 
             probs3dim = tf.reshape(P, [-1, 1, self.mem_size])
-            Bout = tf.batch_matmul(probs3dim, Bin)
+            Bout = tf.matmul(probs3dim, Bin)
             Bout2dim = tf.reshape(Bout, [-1, self.edim])
 
             Cout = tf.matmul(self.hid[-1], self.C)
@@ -89,7 +89,7 @@ class MemN2N(object):
                 F = tf.slice(Dout, [0, 0], [self.batch_size, self.lindim])
                 G = tf.slice(Dout, [0, self.lindim], [self.batch_size, self.edim-self.lindim])
                 K = tf.nn.relu(G)
-                self.hid.append(tf.concat(1, [F, K]))
+                self.hid.append(tf.concat(axis=1, values=[F, K]))
 
     def build_model(self):
         self.build_memory()
@@ -97,7 +97,7 @@ class MemN2N(object):
         self.W = tf.Variable(tf.random_normal([self.edim, self.nwords], stddev=self.init_std))
         z = tf.matmul(self.hid[-1], self.W)
 
-        self.loss = tf.nn.softmax_cross_entropy_with_logits(z, self.target)
+        self.loss = tf.nn.softmax_cross_entropy_with_logits(logits=z, labels=self.target)
 
         self.lr = tf.Variable(self.current_lr)
         self.opt = tf.train.GradientDescentOptimizer(self.lr)
