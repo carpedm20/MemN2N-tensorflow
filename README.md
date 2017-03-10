@@ -16,7 +16,7 @@ When you use docker image tensorflw/tensorflow:latest-gpu, you need to python pa
 
     $ pip install future
     
-If you want to use --show True option, you need to pytho package progress.
+If you want to use `--show True` option, you need to install python package `progress`.
 
     $ pip install progress
     
