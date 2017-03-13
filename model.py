@@ -68,7 +68,7 @@ class MemN2N(object):
 
         for h in xrange(self.nhop):
             self.hid3dim = tf.reshape(self.hid[-1], [-1, 1, self.edim])
-            Aout = tf.matmul(self.hid3dim, Ain, adj_y=True)
+            Aout = tf.matmul(self.hid3dim, Ain, adjoint_b=True)
             Aout2dim = tf.reshape(Aout, [-1, self.mem_size])
             P = tf.nn.softmax(Aout2dim)
 
@@ -169,7 +169,7 @@ class MemN2N(object):
             from utils import ProgressBar
             bar = ProgressBar(label, max=N)
 
-        m = self.mem_size 
+        m = self.mem_size
         for idx in xrange(N):
             if self.show: bar.next()
             target.fill(0)
@@ -237,4 +237,3 @@ class MemN2N(object):
             self.saver.restore(self.sess, ckpt.model_checkpoint_path)
         else:
             raise Exception(" [!] Trest mode but no checkpoint found")
-
